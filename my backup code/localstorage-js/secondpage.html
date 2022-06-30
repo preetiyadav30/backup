@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body>
+ 
+    <h1 id="welcome"></h1>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById('welcome').textContent = `Welcome ${ sessionStorage.getItem('userName') || "stranger"}`;
+})
+    </script>
+ 
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<!--
+ @license
+ Copyright 2019 Google LLC. All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0
+-->
+<html>
+  <head>
+    <title>Add Map</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <!-- <script type="module" src="index.js"></script> -->
+  </head>
+  <body>
+    <h3>My Google Maps Demo</h3>
+    <!--The div element for the map -->
+    <div id="map"></div>
+
+    <!-- 
+     The `defer` attribute causes the callback to execute after the full HTML
+     document has been parsed. For non-blocking uses, avoiding race conditions,
+     and consistent behavior across browsers, consider loading using Promises
+     with https://www.npmjs.com/package/@googlemaps/js-api-loader.
+    -->
+    <script>
+          /** Positions and map statuses **/
+var isLoaded = false;
+/** **/
+var refreshIntervalId;
+var vehicles;
+var map;
+function setVehicleAsCenter (registration) {
+    alert("Hola");
+}
+function loadPoints (positions) {
+    console.debug('loading markers');
+    var lttd;
+    var lgtd;
+    for (var i=0; i < positions.length; i++) {
+        lttd = positions[i].latitude;
+        lgtd = positions[i].longitude;
+        marker = map.addMarker({
+            lat: lttd,
+            lng: lgtd,
+        });
+        markers[positions[i].registration] = marker;
+    };
+    map.fitZoom();
+    isLoaded = true
+}
+function updatePoints (positions) {
+    /**
+    how could be the alorithm here
+    */
+    console.debug('updating markers');
+}
+function requestPoints() {
+    $.ajax({
+        url: "gpstracking.ajax.request_tracks",
+        type: 'get',
+        dataType: 'json',
+        data: {
+            vehicles: vehicles
+        },
+        success: function (positions) {
+            if (isLoaded == false) {
+                loadPoints (positions);
+            } else {
+                updatePoints (positions);
+            }
+        }
+    });
+}
+$(document).ready(function() {
+    /** Buttons Click Event Set **/
+    $('.map-mode').click(function(){
+        vehicles = '';
+        $("#jstree").jstree("get_checked",null,true).find('a[rel="vehicle"]').each(function(){
+            vehicles =  vehicles + $.trim(this.text) + "|";
+        });
+        if (vehicles == '') {
+            console.debug('No vehicles to display');
+            return;
+        }
+        option = $(this).attr('rel');
+        if (option == 'show') {
+            console.debug('Ordering to show');
+            clearInterval(refreshIntervalId);
+            requestPoints();
+        }
+        if (option == 'listen') {
+            console.debug('Listening');
+            requestPoints();
+            refreshIntervalId = setInterval("requestPoints()", 10000);
+        }
+        if (option == 'clear') {
+            console.debug('Clearing');
+            clearInterval(refreshIntervalId);
+            markers = new Object();
+            map.removeMarkers();
+            isLoaded = false;
+        }
+    });
+    /** Map loading **/
+    map = new GMaps({
+        div: '#map-canvas',
+        lat: -16.4237766667,
+        lng: -71.54262,
+    });
+});
+function updatePoints (positions) {
+    for (var i=0; i < positions.length; i++) {
+        var pos=positions[i];
+        var marker=markers[pos.registration];
+        if(marker){
+            // this marker already exists, so reposition it
+            var latlong=new google.maps.LatLng(pos.latitude, pos.longitude);
+            marker.setPosition(latlong);
+        }else{
+            // this is a new marker so create it
+            marker = map.addMarker({
+                lat: pos.latitude,
+                lng: pos.longitude,
+            });
+            markers[pos.registration] = marker;
+        }
+    }
+}
+    </script>
+    <script async
+    src="https://maps.googleapis.com/maps/api/js?key= AIzaSyApZAAwJ2IiRcUftlohtdOBhlzv9VOlF8k&callback=initMap">
+   </script>
+  </body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+
+</head>
+<body>
+    <script>
+      var geocoder;
+ var map;
+ var pos;
+
+
+function initialize() {
+
+geocoder = new google.maps.Geocoder();
+var newyork = new google.maps.LatLng(40.69847032728747, -73.9514422416687);
+var address = document.getElementById("address").value;
+var initialLocation;
+
+var myOptions = {
+  zoom: 12,
+  center: initialLocation,
+  mapTypeId: google.maps.MapTypeId.TERRAIN
+}
+
+
+// Try HTML5 geolocation
+    if(navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var pos = new google.maps.LatLng(position.coords.latitude,
+                                         position.coords.longitude);
+
+
+        var marker = new google.maps.Marker({
+          map: map,
+          position: pos,
+          title: 'Location found using HTML5.',
+          draggable: true
+        });
+
+
+
+        var lat = position.coords.latitude
+        var lng = position.coords.longitude
+        document.getElementById('geo_latitude').value=lat;
+        document.getElementById('geo_longitude').value=lng;
+
+        google.maps.event.addListener(marker, "dragend", function(event) {
+
+            var lat = event.latLng.lat()
+            var lng = event.latLng.lng()
+
+            var infowindow = new google.maps.InfoWindow({
+                // content: '<b><?php _e('Latitude:');?></b>' + lat + '<br><b><?php _e('Longitude:');?></b>' + lng
+             });
+            infowindow.open(map, marker);
+
+            google.maps.event.addListener(marker, "dragstart", function() {
+
+                infowindow.close();
+             });
+
+        document.getElementById('geo_latitude').value=lat;
+        document.getElementById('geo_longitude').value=lng;
+
+
+        });
+
+
+        map.setCenter(pos);
+      }, function() {
+        handleNoGeolocation(true);
+      });
+
+    } else if (google.gears) {
+        browserSupportFlag = true;
+        var geo = google.gears.factory.create('beta.geolocation');
+        geo.getCurrentPosition(function(position) {
+          initialLocation = new google.maps.LatLng(position.latitude,position.longitude);
+          map.setCenter(initialLocation);
+        }, function() {
+          handleNoGeoLocation(browserSupportFlag);
+        });
+      // Browser doesn't support Geolocation
+
+
+      } else {
+        browserSupportFlag = false;
+        handleNoGeolocation(browserSupportFlag);
+      }
+
+
+      function handleNoGeolocation(errorFlag) {
+        if (errorFlag == true) {
+          alert("Geolocation service failed.");
+          initialLocation = newyork;
+        } else {
+          alert("Your browser doesn't support geolocation. We've placed you in New York.");
+          initialLocation = newyork;
+        }
+        map.setCenter(initialLocation);
+      }
+
+
+ map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+ }
+
+  //-------------------------------------------------------End initialize
+
+  function findAddress(address) {
+
+var address = document.getElementById("address").value;
+
+    geocoder.geocode( { 'address': address}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        map.setCenter(results[0].geometry.location);
+        var pos = results[0].geometry.location;
+
+      } else {
+        alert("Geocode was not successful for the following reason: " +   status);
+      }
+    });
+
+}
+    </script>
+      <script async
+      src="https://maps.googleapis.com/maps/api/js?key= AIzaSyApZAAwJ2IiRcUftlohtdOBhlzv9VOlF8k&callback=initMap">
+     </script>
+</body>
+</html>

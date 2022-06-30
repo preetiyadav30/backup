@@ -1,0 +1,64 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Magic App</title>
+    <meta name="description" content="Magic App">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+</head> 
+<body>
+    <h1>Magic App Here</h1>
+    <div id="main">
+        <div id="time" class="sub">
+            <div>
+                <h2>Your local time</h2>
+                <span class="local"></span>
+            </div>
+            <div>
+                <h2>Magic App Server Time</h2>
+                <span class="server"></span>
+            </div>
+        </div>
+        <div id="location" class="sub">
+            <h2>And you are in...</h2>
+            <div class="address"></div>
+        </div>
+    </div>
+    <!-- Script here -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstimezonedetect/1.0.6/jstz.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function(event) {
+  
+  function success(position) {
+    var latitude  = position.coords.latitude;
+    var longitude = position.coords.longitude;
+    reverseGeocodingWithGoogle(latitude, longitude)
+  }
+  function error() {
+    console.log("Unable to retrieve your location");
+  }
+  function ipLookup() {
+    fetch('https://extreme-ip-lookup.com/json/')
+    .then( res => res.json())
+    .then(response => {
+        fallbackProcess(response)
+    })
+    .catch((data, status) => {
+        console.log('We could not find your location');
+    })
+  }
+    // More sauce here
+}); document.addEventListener("DOMContentLoaded", function(event) {
+  if (!navigator.geolocation){
+    console.log("Geolocation is not supported by your browser");
+    ipLookup();
+  } else {
+    navigator.geolocation.getCurrentPosition(success, error);
+  }
+  // More sauce here
+});
+</script>
+</body>
+</html>

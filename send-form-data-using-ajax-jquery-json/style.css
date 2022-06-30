@@ -1,0 +1,33 @@
+body{
+    background-color: beige;
+    background-size: cover;
+}
+.row{
+    text-align: center;
+    padding-top: 5%;
+}
+.card{
+    margin-top: 150px;
+    text-align: center;
+    justify-items: center;
+}
+.login{
+    text-align: center;
+    justify-items: center;
+}
+.new{
+    display: flex;
+}
+.red{
+    width: 100px;
+    height: 100px;
+    border: 1px solid black;
+}
+.blue{
+    width: 100px;
+    height: 100px;
+    border: 1px solid black;
+}
+.new hr{
+    border: 1px solid black;
+}

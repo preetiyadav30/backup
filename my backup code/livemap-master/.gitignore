@@ -1,0 +1,9 @@
+*.log
+node_modules
+.vscode
+.nyc_output
+.DS_Store
+
+# local env files
+.env.local
+.env.*.local

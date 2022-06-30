@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<body>
+ 
+    <form action="secondpage.html" id="myForm">
+        <p>Enter your name</p>
+        <input id="tbName" type="text">
+        <button type="submit">Submit</button>
+      </form>
+    <script>
+        
+        window.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("myForm").addEventListener("submit", e => {
+    const form = e.target;
+    const name = document.getElementById('tbName').value;
+    sessionStorage.setItem('userName', name);
+  })
+})
+    </script>
+ 
+</body>
+</html>
+
+

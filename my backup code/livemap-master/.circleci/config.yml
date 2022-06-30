@@ -1,0 +1,93 @@
+version: 2.1
+orbs:
+  docker: circleci/docker@2.0.3
+  heroku: circleci/heroku@1.2.6
+jobs:
+  lint:
+    docker:
+      - image: cimg/node:14.19
+    steps:
+      - checkout
+      - run:
+          name: Install packages
+          command: npm install -D
+      - run:
+          name: Run lint
+          command: npm run lint
+  test:
+    docker:
+      - image: cimg/node:14.19
+        environment:
+          C_DB_URL: postgres://livemap@localhost:5432/livemapdb
+      - image: circleci/postgres:9.6
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+    steps:
+      - checkout
+      - run:
+          name: Install packages
+          command: npm install -D
+      - run:
+          name: Install PostgreSQL client
+          command: |
+            sudo apt-get update && sudo apt-get install postgresql-client
+      - run:
+          name: Wait for DB
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
+      - run:
+          name: Initialise DB
+          command: |
+            psql -h localhost -p 5432 -U postgres < initdb/10_init-user-db.sql
+      - run:
+          name: Create tables
+          command: |
+            psql -h localhost -p 5432 -U livemap -d livemapdb < setup/schema.sql
+      - run:
+          name: Run tests
+          command: npm test
+  deploy-heroku-staging:
+    executor: heroku/default
+    steps:
+      - checkout
+      - heroku/install
+      - heroku/deploy-via-git:
+          app-name: $HEROKU_APP_NAME_STAGING
+          force: true
+  deploy-heroku-production:
+    executor: heroku/default
+    steps:
+      - checkout
+      - heroku/install
+      - heroku/deploy-via-git:
+          app-name: $HEROKU_APP_NAME_PRODUCTION
+          force: true
+workflows:
+  lint-build-test-deploy:
+    jobs:
+      - lint
+      - test
+      - docker/publish:
+          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          tag: $CIRCLE_SHA1,latest
+          update-description: true
+          requires:
+            - lint
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy-heroku-staging:
+          requires:
+            - lint
+            - test
+          filters:
+            branches:
+              ignore: master
+      - deploy-heroku-production:
+          requires:
+            - lint
+            - test
+          filters:
+            branches:
+              only: master
